@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.exceptions import LumioException, lumio_exception_handler, generic_exception_handler
 from api import connection, procedures, report, export, ai
+from utils.file_utils import ensure_dirs
 import oracledb
 
 oracledb.init_oracle_client(lib_dir=r"D:\instantclient_21_20")
@@ -17,6 +18,8 @@ app.add_middleware(
 
 app.add_exception_handler(LumioException, lumio_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
+
+ensure_dirs()
 
 app.include_router(connection.router, prefix="/connect",    tags=["Connection"])
 app.include_router(procedures.router, prefix="/procedures", tags=["Procedures"])
