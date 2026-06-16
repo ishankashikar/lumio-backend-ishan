@@ -1,25 +1,52 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from core.exceptions import LumioException, lumio_exception_handler, generic_exception_handler
-from api import connection, procedures, report, export, ai
-import oracledb
+"""
+core/exceptions.py
 
-oracledb.init_oracle_client(lib_dir=r"D:\instantclient_21_20")
+Custom exception classes and handlers for Lumio.
+"""
 
-app = FastAPI(title="Lumio Backend", version="1.0.0")
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-app.add_exception_handler(LumioException, lumio_exception_handler)
-app.add_exception_handler(Exception, generic_exception_handler)
+class LumioException(Exception):
+    """
+    Custom exception for all Lumio backend errors.
+    Raised anywhere in the app with a status code and detail message.
+    """
+    def __init__(self, status_code: int, detail: str):
+        self.status_code = status_code
+        self.detail      = detail
+        super().__init__(detail)
 
-app.include_router(connection.router, prefix="/connect",    tags=["Connection"])
-app.include_router(procedures.router, prefix="/procedures", tags=["Procedures"])
-app.include_router(report.router,     prefix="/report",     tags=["Report"])
-app.include_router(export.router,     prefix="/export",     tags=["Export"])
-app.include_router(ai.router,         prefix="/ai",         tags=["AI"])
+
+async def lumio_exception_handler(
+    request: Request,
+    exc:     LumioException,
+) -> JSONResponse:
+    """Handles all LumioException instances."""
+    return JSONResponse(
+        status_code = exc.status_code,
+        content     = {
+            "error":   True,
+            "detail":  exc.detail,
+            "path":    str(request.url),
+        }
+    )
+
+
+async def generic_exception_handler(
+    request: Request,
+    exc:     Exception,
+) -> JSONResponse:
+    """
+    Catches all unhandled exceptions.
+    Never exposes raw error to frontend.
+    """
+    return JSONResponse(
+        status_code = 500,
+        content     = {
+            "error":  True,
+            "detail": "An unexpected error occurred. Please try again.",
+            "path":   str(request.url),
+        }
+    )

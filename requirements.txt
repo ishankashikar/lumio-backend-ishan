@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+oracledb
+python-dotenv
+google-generativeai
+reportlab
+openpyxl
+pydantic
+python-multipart
+qdrant-client
+redis==5.0.1

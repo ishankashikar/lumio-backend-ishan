@@ -1,19 +1,27 @@
 from fastapi import APIRouter
+from core.logger import get_logger
 from models.request_models import (
     ChatRequest, ExportRequest,
-    ApplyChartsRequest, ApplyInsightsRequest
+    ApplyChartsRequest, ApplyInsightsRequest,
+    ColumnIntelligenceRequest, ConfirmColumnsRequest
 )
-from core.logger import get_logger
 
 router = APIRouter()
 logger = get_logger(__name__)
 
 
 @router.post("/column-intelligence")
-def column_intelligence(req: ExportRequest):
+def column_intelligence(req: ColumnIntelligenceRequest):
     from ai.column_intelligence import run_column_intelligence
-    result = run_column_intelligence(req.report_id, req)
-    return {"status": "ok", "column_operations": result}
+    result = run_column_intelligence(req)
+    return {"status": "ok", **result}
+
+
+@router.post("/confirm-columns")
+def confirm_columns(req: ConfirmColumnsRequest):
+    from ai.column_intelligence import confirm_column_operations
+    result = confirm_column_operations(req)
+    return {"status": "ok", **result}
 
 
 @router.post("/chat")

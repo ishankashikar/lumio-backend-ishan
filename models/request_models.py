@@ -37,3 +37,15 @@ class ApplyChartsRequest(BaseModel):
 
 class ApplyInsightsRequest(BaseModel):
     report_id: str
+
+class ColumnIntelligenceRequest(DBCreds):
+    bank_id: str
+    procedure_name: str
+    report_type: str
+    columns: list[str]
+    rows: list[list]
+
+class ConfirmColumnsRequest(BaseModel):
+    bank_id: str
+    procedure_name: str
+    confirmed_columns: dict[str, dict]
