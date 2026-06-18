@@ -1,0 +1,88 @@
+{
+  "version": "1.0",
+  "reportId": "PR_STATEMENTOFAC_default_3ff23d70",
+  "reportType": "PR_STATEMENTOFAC",
+  "procedureName": "PR_STATEMENTOFAC",
+  "createdAt": "2026-06-17T12:31:52.239811",
+  "updatedAt": "2026-06-17T12:31:52.239811",
+  "totalRows": 0,
+  "template": "tabular",
+  "inParams": {},
+  "cursorIndex": 0,
+  "bank": {
+    "bankName": "",
+    "bankShortName": "",
+    "ifsc": "",
+    "rbiRegiCode": "",
+    "address": "",
+    "city": "",
+    "state": "",
+    "pin": "",
+    "phone": "",
+    "fax": "",
+    "email": "",
+    "branchName": "",
+    "branchCode": "",
+    "micrCode": "",
+    "branchIfsc": "",
+    "logo": "",
+    "watermark": "",
+    "sign1": "",
+    "ceoSign": "",
+    "chairmanSign": "",
+    "disclaimer": "This report is generated for internal use only and is confidential.",
+    "copyright": ""
+  },
+  "reportTitle": "Pr Statementofac",
+  "headerParams": [
+    "NEWACNO",
+    "SUBACNO",
+    "FROMDATE",
+    "UPTODATE",
+    "STATTYPE"
+  ],
+  "footer": {
+    "generatedBy": "Employee123",
+    "generatedOn": "17/06/2026 18:01:52",
+    "pageNumber": true
+  },
+  "columns": [],
+  "watermark": {
+    "enabled": false,
+    "image": "",
+    "opacity": 0.62,
+    "position": "center"
+  },
+  "style": {
+    "fontFamily": "Inter",
+    "fontSize": 13,
+    "headerBg": "#1e3a5f",
+    "headerText": "#ffffff",
+    "altRowBg": "#f0f4ff",
+    "rowBg": "#ffffff",
+    "rowText": "#1e293b",
+    "borderColor": "#e2e8f0",
+    "accentColor": "#3b6fd4"
+  },
+  "page": {
+    "marginTop": 20,
+    "marginBottom": 20,
+    "marginLeft": 14,
+    "marginRight": 14,
+    "orientation": "portrait",
+    "size": "A4"
+  },
+  "grouping": {
+    "groupByColumn": "",
+    "showSubtotals": true,
+    "showGrandTotal": true
+  },
+  "chart": {
+    "enabled": false,
+    "type": "bar",
+    "xCol": "",
+    "yCol": "",
+    "aggFunc": "Sum",
+    "title": ""
+  }
+}

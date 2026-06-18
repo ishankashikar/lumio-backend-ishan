@@ -1,0 +1,12 @@
+[
+  {
+    "role": "user",
+    "content": "What is the total deposit amount?",
+    "timestamp": "2026-06-17T18:00:26.047363"
+  },
+  {
+    "role": "assistant",
+    "content": "Something went wrong. Please try again.",
+    "timestamp": "2026-06-17T18:00:28.943508"
+  }
+]

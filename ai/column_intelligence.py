@@ -76,14 +76,17 @@ async def _ensure_collection(bank_id: str) -> None:
 
 async def _embed(text: str) -> list[float]:
     """Convert text → vector using Gemini embedding model (async)."""
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    client = genai.Client(
+        api_key      = settings.GEMINI_API_KEY,
+    )
     def _sync():
         result = client.models.embed_content(
             model    = GEMINI_EMBEDDING_MODEL,
-            contents = text,
+            contents = [text],
         )
         return result.embeddings[0].values
     return await asyncio.to_thread(_sync)
+
 
 
 async def _search_exact(
@@ -135,13 +138,15 @@ async def _search_similar(
     embedding = await _embed(query_text)
 
     def _sync():
-        results = _qdrant.search(
-            collection_name = _collection_name(bank_id),
-            query_vector    = embedding,
-            limit           = 1,
-            score_threshold = SIMILARITY_THRESHOLD,
+        # New — correct for latest qdrant-client
+        results = _qdrant.query_points(
+            collection_name=_collection_name(bank_id),
+            query=embedding,
+            limit=1,
+            score_threshold=SIMILARITY_THRESHOLD,
         )
-        return results[0].payload if results else None
+        points = results.points
+        return points[0].payload if points else None
     return await asyncio.to_thread(_sync)
 
 
@@ -429,24 +434,41 @@ Respond ONLY with valid JSON — no markdown, no explanation:
 
     def _sync():
         return client.models.generate_content(
-            model    = GEMINI_MODEL,
-            contents = prompt,
-            config   = types.GenerateContentConfig(
-                temperature        = 0.1,
-                max_output_tokens  = 2048,
-                response_mime_type = "application/json",
+            model=GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+                max_output_tokens=8192,
+                response_mime_type="application/json",
             )
         )
 
+    # Retry up to 3 times on 503 (Gemini temporarily busy)
+    response = None
+    for attempt in range(3):
+        try:
+            response = await asyncio.to_thread(_sync)
+            break  # success → stop retrying
+        except Exception as e:
+            if "503" in str(e) and attempt < 2:
+                logger.warning(
+                    f"[CI] Gemini busy (503) — "
+                    f"retrying in 5s (attempt {attempt + 1}/3)"
+                )
+                await asyncio.sleep(5)
+                continue
+            raise  # not 503 or last attempt → fail
+
     try:
-        response = await asyncio.to_thread(_sync)
-        raw      = response.text.strip()
-        raw      = re.sub(r"^```[a-z]*\n?", "", raw)
-        raw      = re.sub(r"\n?```$",        "", raw)
+        raw = response.text.strip()
+        raw = re.sub(r"^```[a-z]*\n?", "", raw)
+        raw = re.sub(r"\n?```$", "", raw)
         return json.loads(raw)
+
 
     except json.JSONDecodeError as e:
         logger.error(f"[CI] Gemini JSON parse failed: {e}")
+        logger.error(f"[CI] Raw response (first 500 chars): {raw[:500]}")
         raise LumioException(
             status_code = 500,
             detail      = "AI column analysis failed. Please retry."
@@ -604,8 +626,8 @@ async def run_column_intelligence(req) -> dict:
 
     # ── Single Gemini call for ALL unknowns ───────────────────────────────────
     if unknown:
-        source       = await _fetch_procedure_source(
-            req.db_creds, req.procedure_name
+        source = await _fetch_procedure_source(
+             req, req.procedure_name
         )
         select_block = _extract_select_block(source)
 
